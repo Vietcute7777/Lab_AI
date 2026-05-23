@@ -133,8 +133,8 @@ class Phase2Screen:
 
     def draw(self, screen):
         screen.fill(cfg.GRAY_DARK)
-        draw_text(screen, "PHA 2: DIEU KHIEN ROBOT HUT BUI", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
-        draw_text(screen, f"AP: {state.action_points} | Da hut: {state.dust_cleaned}/{state.total_dust}",
+        draw_text(screen, "PHA 2: ĐIỀU KHIỂN ROBOT HÚT BỤI", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
+        draw_text(screen, f"AP: {state.action_points} | Đã hút: {state.dust_cleaned}/{state.total_dust}",
                   20, 55, cfg.FONT_NORMAL, cfg.ORANGE)
 
         if state.grid_map is not None:
@@ -146,7 +146,7 @@ class Phase2Screen:
         draw_panel(screen, pygame.Rect(850, 0, 350, 800))
 
         if self.mode == "select":
-            draw_text(screen, "CHON THUAT TOAN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
+            draw_text(screen, "CHỌN THUẬT TOÁN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
             mouse = pygame.mouse.get_pos()
             for i, (a, enabled) in enumerate(self.algo_list):
                 rect = self.algo_rects[i]
@@ -156,8 +156,8 @@ class Phase2Screen:
 
         elif self.mode == "running":
             a = pathfinding_registry.get(state.selected_algo_id)
-            draw_text(screen, f"Thuat toan: {a.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
-            draw_text(screen, f"Buoc: {self.robot.steps_taken}/{state.action_points}",
+            draw_text(screen, f"Thuật toán: {a.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
+            draw_text(screen, f"Bước: {self.robot.steps_taken}/{state.action_points}",
                       410, 195, cfg.FONT_SMALL, cfg.WHITE)
             pct = state.dust_cleaned / max(state.total_dust, 1)
             draw_progress_bar(screen, 410, 215, 250, 16, pct, cfg.YELLOW)
@@ -171,16 +171,16 @@ class Phase2Screen:
 
     def _draw_result(self, screen):
         x, y = 410, 170
-        draw_text(screen, "KET QUA", x, y, cfg.FONT_LARGE, cfg.CYAN)
+        draw_text(screen, "KẾT QUẢ", x, y, cfg.FONT_LARGE, cfg.CYAN)
         y += 40
-        draw_text(screen, f"Bui da hut: {state.dust_cleaned} / {state.total_dust}", x, y)
+        draw_text(screen, f"Bụi đã hút: {state.dust_cleaned} / {state.total_dust}", x, y)
         y += 25
-        draw_text(screen, f"AP con du: {state.action_points - self.robot.steps_taken}", x, y)
+        draw_text(screen, f"AP còn dư: {state.action_points - self.robot.steps_taken}", x, y)
         y += 25
-        draw_text(screen, f"Thuat toan toi uu: {'Co' if state.optimal_algo_chosen else 'Khong'}",
+        draw_text(screen, f"Thuật toán tối ưu: {'Có' if state.optimal_algo_chosen else 'Không'}",
                   x, y, color=cfg.GREEN if state.optimal_algo_chosen else cfg.RED)
         y += 25
-        draw_text(screen, f"Diem: {state.score}", x, y, cfg.FONT_LARGE, cfg.ORANGE)
+        draw_text(screen, f"Điểm: {state.score}", x, y, cfg.FONT_LARGE, cfg.ORANGE)
         y += 35
         stars_text = "⭐" * state.stars + "☆" * (3 - state.stars)
         draw_text(screen, stars_text, x, y, cfg.FONT_TITLE, cfg.YELLOW)

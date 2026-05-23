@@ -22,6 +22,6 @@ def find_path(grid, start_pos):
 
 pathfinding_registry.register(PathfindingInfo(
     id="dfs", name="DFS (Depth-First Search)",
-    description="Tim duong den bui theo chieu sau. Khong dam bao ngan nhat.",
+    description="Tìm đường đến bụi theo chiều sâu. Không đảm bảo ngắn nhất.",
     category="uninformed", find_path=find_path
 ))

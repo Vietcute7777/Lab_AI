@@ -13,7 +13,7 @@ class GameControls:
     def get_buttons(self):
         btns = []
         bx = self.x
-        label = "Tam dung" if (state.animating and not state.anim_paused) else "Chay"
+        label = "Tạm dừng" if (state.animating and not state.anim_paused) else "Chạy"
         btns.append((pygame.Rect(bx, self.y, self.bw, self.bh), label, "play"))
         bx += self.bw + 8
         for sp, lbl in [(1, "1x"), (2, "2x"), (4, "4x")]:

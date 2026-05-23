@@ -29,6 +29,6 @@ def find_path(grid, start_pos):
 
 pathfinding_registry.register(PathfindingInfo(
     id="ucs", name="UCS (Uniform Cost Search)",
-    description="Mo rong node co chi phi thap nhat. Toi uu, hoat dong tot ca khi trong so khac nhau.",
+    description="Mở rộng node có chi phí thấp nhất. Tối ưu, hoạt động tốt cả khi trọng số khác nhau.",
     category="optimal", unlocked_by_default=False, find_path=find_path
 ))

@@ -31,7 +31,7 @@ def generate_daily_grid():
 
 def start_daily():
     if has_daily_played_today():
-        return False, "Da choi hom nay roi!"
+        return False, "Đã chơi hôm nay rồi!"
     state.mode = GameMode.DAILY
     state.current_level = 0
     return True, ""

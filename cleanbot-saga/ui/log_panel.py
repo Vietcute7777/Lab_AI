@@ -20,25 +20,25 @@ class LogPanel:
             self.entries = self.entries[-self.MAX_LINES:]
 
     def add_move(self, step, direction, detail=""):
-        msg = f"Buoc {step}: {direction}"
+        msg = f"Bước {step}: {direction}"
         if detail: msg += f" - {detail}"
         self.add(msg, cfg.BLUE)
 
     def add_clean(self, pos, cleaned, total):
-        self.add(f"  >> HUT BUI tai ({pos[0]},{pos[1]})! {cleaned}/{total}", cfg.YELLOW)
+        self.add(f"  >> HÚT BỤI tại ({pos[0]},{pos[1]})! {cleaned}/{total}", cfg.YELLOW)
 
     def add_search(self, algo_name):
-        self.add(f"  [Tim duong: {algo_name}...]", cfg.CYAN)
+        self.add(f"  [Tìm đường: {algo_name}...]", cfg.CYAN)
 
     def add_complete(self, success, info=""):
         color = cfg.GREEN if success else cfg.RED
-        self.add(f"{'HOAN THANH' if success else 'THAT BAI'}! {info}", color)
+        self.add(f"{'HOÀN THÀNH' if success else 'THẤT BẠI'}! {info}", color)
 
     def draw(self, screen):
         pygame.draw.rect(screen, cfg.BLACK, self.rect, border_radius=6)
         pygame.draw.rect(screen, cfg.GRAY_MID, self.rect, width=1, border_radius=6)
 
-        title = cfg.FONT_NORMAL.render("NHAT KY THUAT TOAN", True, cfg.CYAN)
+        title = cfg.FONT_NORMAL.render("NHẬT KÝ THUẬT TOÁN", True, cfg.CYAN)
         screen.blit(title, (self.rect.x + 10, self.rect.y + 6))
 
         line_y = self.rect.y + 32

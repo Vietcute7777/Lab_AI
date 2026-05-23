@@ -32,6 +32,6 @@ def solve(board):
 
 puzzle_registry.register(SolverInfo(
     id="bfs", name="BFS (Breadth-First Search)",
-    description="Duyet theo chieu rong. Luon tim duong di ngan nhat.",
+    description="Duyệt theo chiều rộng. Luôn tìm đường đi ngắn nhất.",
     category="optimal", solve=solve
 ))

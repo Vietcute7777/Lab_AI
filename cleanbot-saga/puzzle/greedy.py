@@ -38,6 +38,6 @@ def solve(board):
 
 puzzle_registry.register(SolverInfo(
     id="greedy", name="Greedy Best-First Search",
-    description="Tham lam: luon chon nuoc co Manhattan nho nhat. Nhanh nhung khong dam bao toi uu.",
+    description="Tham lam: luôn chọn nước đi có Manhattan nhỏ nhất. Nhanh nhưng không đảm bảo tối ưu.",
     category="heuristic", unlocked_by_default=False, solve=solve
 ))

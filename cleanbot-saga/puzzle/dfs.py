@@ -37,6 +37,6 @@ def solve(board):
 
 puzzle_registry.register(SolverInfo(
     id="dfs", name="DFS (Depth-First Search)",
-    description="Duyet theo chieu sau (gioi han 30). Khong dam bao toi uu.",
+    description="Duyệt theo chiều sâu (giới hạn 30). Không đảm bảo tối ưu.",
     category="uninformed", solve=solve
 ))

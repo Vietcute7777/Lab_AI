@@ -37,19 +37,19 @@ class ResultScreen:
 
     def draw(self, screen):
         screen.fill(cfg.GRAY_DARK)
-        draw_text(screen, "KET QUA", 20, 40, cfg.FONT_TITLE, cfg.CYAN)
+        draw_text(screen, "KẾT QUẢ", 20, 40, cfg.FONT_TITLE, cfg.CYAN)
 
         y = 130
-        draw_text(screen, f"Bui da hut: {state.dust_cleaned} / {state.total_dust}", 100, y, cfg.FONT_LARGE)
+        draw_text(screen, f"Bụi đã hút: {state.dust_cleaned} / {state.total_dust}", 100, y, cfg.FONT_LARGE)
         y += 40
         ap_remain = max(0, state.action_points - state.robot_steps_taken)
-        draw_text(screen, f"AP con du: {ap_remain}", 100, y, cfg.FONT_LARGE)
+        draw_text(screen, f"AP còn dư: {ap_remain}", 100, y, cfg.FONT_LARGE)
         y += 40
-        opt_text = "Co" if state.optimal_algo_chosen else "Khong"
+        opt_text = "Có" if state.optimal_algo_chosen else "Không"
         opt_color = cfg.GREEN if state.optimal_algo_chosen else cfg.RED
-        draw_text(screen, f"Thuat toan toi uu: {opt_text}", 100, y, cfg.FONT_LARGE, opt_color)
+        draw_text(screen, f"Thuật toán tối ưu: {opt_text}", 100, y, cfg.FONT_LARGE, opt_color)
         y += 50
-        draw_text(screen, f"TONG DIEM: {state.score}", 100, y, cfg.FONT_TITLE, cfg.ORANGE)
+        draw_text(screen, f"TỔNG ĐIỂM: {state.score}", 100, y, cfg.FONT_TITLE, cfg.ORANGE)
         y += 60
         stars_text = "⭐" * state.stars + "☆" * (3 - state.stars)
         draw_text(screen, stars_text, 100, y, cfg.FONT_TITLE, cfg.YELLOW)
@@ -61,7 +61,7 @@ class ResultScreen:
         self.retry_rect = pygame.Rect(cx + 20, 550, bw, bh)
 
         mouse = pygame.mouse.get_pos()
-        draw_button(screen, self.continue_rect, "TIEP TUC",
+        draw_button(screen, self.continue_rect, "TIẾP TỤC",
                     cfg.GREEN, self.continue_rect.collidepoint(mouse))
-        draw_button(screen, self.retry_rect, "CHOI LAI",
+        draw_button(screen, self.retry_rect, "CHƠI LẠI",
                     cfg.BLUE, self.retry_rect.collidepoint(mouse))

@@ -21,12 +21,12 @@ class MainMenu:
         pve_unlocked = stars >= 20
 
         self.button_defs = [
-            ("CHIEN DICH (Campaign)", GameMode.CAMPAIGN, True,
-             f"Man {lvl + 1} | Tong ⭐: {stars}"),
+            ("CHIẾN DỊCH (Campaign)", GameMode.CAMPAIGN, True,
+             f"Màn {lvl + 1} | Tổng ⭐: {stars}"),
             ("DAILY CHALLENGE", GameMode.DAILY, True,
-             "1 ngay — 1 co hoi"),
+             "1 ngày — 1 cơ hội"),
             ("PVE ARENA", GameMode.PVE, pve_unlocked,
-             f"Elo: {load_elo()}" if pve_unlocked else "Can >= 20⭐ de mo khoa"),
+             f"Elo: {load_elo()}" if pve_unlocked else "Cần >= 20⭐ để mở khóa"),
         ]
         self.button_rects = []
         y = screen.get_height() // 2 - 90
@@ -49,7 +49,7 @@ class MainMenu:
         screen.blit(title, title.get_rect(centerx=cx, y=80))
 
         sub = cfg.FONT_NORMAL.render(
-            "Game Chien Thuat AI — Giai 8-Puzzle & Dieu Khien Robot Hut Bui",
+            "Game Chiến Thuật AI — Giải 8-Puzzle & Điều Khiển Robot Hút Bụi",
             True, cfg.GRAY_LIGHT)
         screen.blit(sub, sub.get_rect(centerx=cx, y=140))
 

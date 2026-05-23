@@ -29,6 +29,6 @@ def find_path(grid, start_pos):
 
 pathfinding_registry.register(PathfindingInfo(
     id="ids", name="IDS (Iterative Deepening)",
-    description="Ket hop uu diem BFS (toi uu) va DFS (it bo nho). Tang dan do sau.",
+    description="Kết hợp ưu điểm BFS (tối ưu) và DFS (ít bộ nhớ). Tăng dần độ sâu.",
     category="iterative", unlocked_by_default=False, find_path=find_path
 ))

@@ -147,7 +147,7 @@ def main():
             if phase2.mode == "done":
                 from ui.renderer import draw_button as db3
                 mouse = pygame.mouse.get_pos()
-                db3(screen, view_result_rect, "XEM KET QUA >>",
+                db3(screen, view_result_rect, "XEM KẾT QUẢ >>",
                     cfg.ORANGE, view_result_rect.collidepoint(mouse))
 
         elif state.phase == Phase.RESULT:

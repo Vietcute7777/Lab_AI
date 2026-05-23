@@ -66,8 +66,8 @@ class Phase1Screen:
     def _start_solver(self, solver_info):
         state.selected_solver_id = solver_info.id
         self.log.clear()
-        self.log.add(f"Da chon: {solver_info.name}")
-        self.log.add("Dang chay thuat toan...")
+        self.log.add(f"Đã chọn: {solver_info.name}")
+        self.log.add("Đang chạy thuật toán...")
         path, nodes = solver_info.solve(state.puzzle_initial)
         self.solution_path = path
         self.nodes_explored = nodes
@@ -79,7 +79,7 @@ class Phase1Screen:
             state.anim_paused = False
             self.last_step_time = pygame.time.get_ticks()
         else:
-            self.log.add_complete(False, "Khong tim thay loi giai")
+            self.log.add_complete(False, "Không tìm thấy lời giải")
             self.mode = "done"
             state.action_points = 0
 
@@ -108,8 +108,8 @@ class Phase1Screen:
         state.animating = False
         steps = len(self.solution_path)
         state.action_points = calculate_ap(steps)
-        self.log.add_complete(True, f"{steps} buoc, AP={state.action_points}")
-        self.log.add(f"Nodes da duyet: {self.nodes_explored}")
+        self.log.add_complete(True, f"{steps} bước, AP={state.action_points}")
+        self.log.add(f"Nodes đã duyệt: {self.nodes_explored}")
         unlocked = get_unlocked_solvers()
         self.comparison = []
         for s in puzzle_registry.list_all():
@@ -120,17 +120,17 @@ class Phase1Screen:
 
     def draw(self, screen):
         screen.fill(cfg.GRAY_DARK)
-        draw_text(screen, "PHA 1: GIAI 8-PUZZLE", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
+        draw_text(screen, "PHA 1: GIẢI 8-PUZZLE", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
 
         if self.current_board:
             draw_puzzle_board(screen, self.current_board, 50, 80)
-            draw_text(screen, "Dich:", 50, 370, cfg.FONT_SMALL, cfg.GRAY_LIGHT)
+            draw_text(screen, "Đích:", 50, 370, cfg.FONT_SMALL, cfg.GRAY_LIGHT)
             draw_puzzle_board(screen, GOAL, 50, 390)
 
         draw_panel(screen, pygame.Rect(850, 0, 350, 800))
 
         if self.mode == "select":
-            draw_text(screen, "CHON THUAT TOAN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
+            draw_text(screen, "CHỌN THUẬT TOÁN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
             mouse = pygame.mouse.get_pos()
             for i, (s, enabled) in enumerate(self.solver_list):
                 rect = self.solver_rects[i]
@@ -143,8 +143,8 @@ class Phase1Screen:
 
         elif self.mode == "running":
             s = puzzle_registry.get(state.selected_solver_id)
-            draw_text(screen, f"Dang chay: {s.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
-            draw_text(screen, f"Buoc: {self.current_step}/{len(self.solution_path)}",
+            draw_text(screen, f"Đang chạy: {s.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
+            draw_text(screen, f"Bước: {self.current_step}/{len(self.solution_path)}",
                       410, 195, cfg.FONT_SMALL, cfg.WHITE)
 
         self.log.draw(screen)
@@ -153,9 +153,9 @@ class Phase1Screen:
 
     def _draw_comparison(self, screen):
         x, y = 410, 170
-        draw_text(screen, "KET QUA SO SANH:", x, y, cfg.FONT_NORMAL, cfg.CYAN)
+        draw_text(screen, "KẾT QUẢ SO SÁNH:", x, y, cfg.FONT_NORMAL, cfg.CYAN)
         y += 25
-        for col_h, (label, w) in enumerate([("Thuat toan", 160), ("Buoc", 60), ("Nodes", 60), ("Toi uu", 60)]):
+        for col_h, (label, w) in enumerate([("Thuật toán", 160), ("Bước", 60), ("Nodes", 60), ("Tối ưu", 60)]):
             screen.blit(cfg.FONT_SMALL.render(label, True, cfg.GRAY_LIGHT), (x + sum([0, 160, 60, 60][:col_h]), y))
         y += 20
         for name, steps, nodes, is_opt in self.comparison:
@@ -164,8 +164,8 @@ class Phase1Screen:
             screen.blit(cfg.FONT_SMALL.render(name, True, color), (x, y))
             screen.blit(cfg.FONT_SMALL.render(str(steps), True, color), (x + 160, y))
             screen.blit(cfg.FONT_SMALL.render(str(nodes), True, color), (x + 220, y))
-            screen.blit(cfg.FONT_SMALL.render("Co" if is_opt else "Khong", True, cfg.GREEN if is_opt else cfg.RED), (x + 280, y))
+            screen.blit(cfg.FONT_SMALL.render("Có" if is_opt else "Không", True, cfg.GREEN if is_opt else cfg.RED), (x + 280, y))
             y += 20
         y += 10
-        ap_text = cfg.FONT_LARGE.render(f"AP nhan duoc: {state.action_points}", True, cfg.ORANGE)
+        ap_text = cfg.FONT_LARGE.render(f"AP nhận được: {state.action_points}", True, cfg.ORANGE)
         screen.blit(ap_text, (x, y))

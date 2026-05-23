@@ -23,6 +23,6 @@ def find_path(grid, start_pos):
 
 pathfinding_registry.register(PathfindingInfo(
     id="bfs", name="BFS (Breadth-First Search)",
-    description="Tim duong ngan nhat den bui gan nhat. Luon toi uu.",
+    description="Tìm đường ngắn nhất đến bụi gần nhất. Luôn tối ưu.",
     category="optimal", find_path=find_path
 ))
