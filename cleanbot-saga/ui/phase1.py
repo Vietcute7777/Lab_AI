@@ -1,0 +1,171 @@
+# cleanbot-saga/ui/phase1.py
+"""Phase 1: select algorithm, watch AI solve 8-puzzle with step-by-step animation."""
+import pygame
+import config as cfg
+from core.game_state import state, Phase
+from core.scoring import calculate_ap
+from core.storage import get_unlocked_solvers
+from puzzle import puzzle_registry
+from puzzle.board import generate_board, apply_move, GOAL, is_goal
+from puzzle.heuristic import manhattan_distance
+from ui.renderer import draw_puzzle_board, draw_button, draw_panel, draw_text
+from ui.log_panel import LogPanel
+from ui.controls import GameControls
+
+
+class Phase1Screen:
+    def __init__(self):
+        self.log = LogPanel(850, 310, 330, 400)
+        self.controls = GameControls(410, 420)
+        self.solver_rects = []
+        self.solver_list = []
+        self.mode = "select"
+        self.solution_path = []
+        self.current_step = 0
+        self.current_board = None
+        self.last_step_time = 0
+        self.nodes_explored = 0
+        self.comparison = []
+
+    def enter(self, shuffle_steps=10):
+        state.reset_phase1()
+        state.puzzle_board = generate_board(shuffle_steps)
+        state.puzzle_initial = [row[:] for row in state.puzzle_board]
+        self.current_board = [row[:] for row in state.puzzle_board]
+        self.mode = "select"
+        self.solution_path = []
+        self.current_step = 0
+        self.log.clear()
+        self._build_solver_list()
+
+    def _build_solver_list(self):
+        unlocked = get_unlocked_solvers()
+        self.solver_list = []
+        self.solver_rects = []
+        y = 200
+        for s in puzzle_registry.list_all():
+            enabled = s.id in unlocked
+            self.solver_list.append((s, enabled))
+            self.solver_rects.append(pygame.Rect(410, y, 330, 40))
+            y += 50
+
+    def handle_click(self, pos):
+        if self.mode == "select":
+            for i, rect in enumerate(self.solver_rects):
+                if rect.collidepoint(pos) and self.solver_list[i][1]:
+                    self._start_solver(self.solver_list[i][0])
+                    return
+        action = self.controls.handle_click(pos)
+        if action == "play":
+            state.anim_paused = not state.anim_paused
+            self.last_step_time = pygame.time.get_ticks()
+        elif action and action.startswith("speed_"):
+            state.anim_speed = int(action.split("_")[1])
+            self.last_step_time = pygame.time.get_ticks()
+
+    def _start_solver(self, solver_info):
+        state.selected_solver_id = solver_info.id
+        self.log.clear()
+        self.log.add(f"Da chon: {solver_info.name}")
+        self.log.add("Dang chay thuat toan...")
+        path, nodes = solver_info.solve(state.puzzle_initial)
+        self.solution_path = path
+        self.nodes_explored = nodes
+        self.current_step = 0
+        self.current_board = [row[:] for row in state.puzzle_initial]
+        if path:
+            self.mode = "running"
+            state.animating = True
+            state.anim_paused = False
+            self.last_step_time = pygame.time.get_ticks()
+        else:
+            self.log.add_complete(False, "Khong tim thay loi giai")
+            self.mode = "done"
+            state.action_points = 0
+
+    def update(self):
+        if self.mode != "running" or state.anim_paused:
+            return
+        if self.current_step >= len(self.solution_path):
+            return
+        now = pygame.time.get_ticks()
+        if now - self.last_step_time < state.speed_ms:
+            return
+        self.last_step_time = now
+
+        direction = self.solution_path[self.current_step]
+        self.current_board = apply_move(self.current_board, direction)
+        self.current_step += 1
+
+        h = manhattan_distance(self.current_board)
+        self.log.add_move(self.current_step, direction, f"h={h}")
+
+        if self.current_step >= len(self.solution_path):
+            self._finish()
+
+    def _finish(self):
+        self.mode = "done"
+        state.animating = False
+        steps = len(self.solution_path)
+        state.action_points = calculate_ap(steps)
+        self.log.add_complete(True, f"{steps} buoc, AP={state.action_points}")
+        self.log.add(f"Nodes da duyet: {self.nodes_explored}")
+        unlocked = get_unlocked_solvers()
+        self.comparison = []
+        for s in puzzle_registry.list_all():
+            if s.id in unlocked:
+                p, n = s.solve(state.puzzle_initial)
+                self.comparison.append((s.name, len(p) if p else "-", n, s.category == "optimal"))
+        self.comparison.sort(key=lambda x: x[1] if isinstance(x[1], int) else 999)
+
+    def draw(self, screen):
+        screen.fill(cfg.GRAY_DARK)
+        draw_text(screen, "PHA 1: GIAI 8-PUZZLE", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
+
+        if self.current_board:
+            draw_puzzle_board(screen, self.current_board, 50, 80)
+            draw_text(screen, "Dich:", 50, 370, cfg.FONT_SMALL, cfg.GRAY_LIGHT)
+            draw_puzzle_board(screen, GOAL, 50, 390)
+
+        draw_panel(screen, pygame.Rect(850, 0, 350, 800))
+
+        if self.mode == "select":
+            draw_text(screen, "CHON THUAT TOAN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
+            mouse = pygame.mouse.get_pos()
+            for i, (s, enabled) in enumerate(self.solver_list):
+                rect = self.solver_rects[i]
+                hover = rect.collidepoint(mouse)
+                color = cfg.GREEN if s.category == "optimal" else cfg.BLUE
+                draw_button(screen, rect, s.name, color, hover, enabled)
+
+        if self.mode == "done":
+            self._draw_comparison(screen)
+
+        elif self.mode == "running":
+            s = puzzle_registry.get(state.selected_solver_id)
+            draw_text(screen, f"Dang chay: {s.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
+            draw_text(screen, f"Buoc: {self.current_step}/{len(self.solution_path)}",
+                      410, 195, cfg.FONT_SMALL, cfg.WHITE)
+
+        self.log.draw(screen)
+        if self.mode in ("running", "done"):
+            self.controls.draw(screen)
+
+    def _draw_comparison(self, screen):
+        x, y = 410, 170
+        draw_text(screen, "KET QUA SO SANH:", x, y, cfg.FONT_NORMAL, cfg.CYAN)
+        y += 25
+        for col_h, (label, w) in enumerate([("Thuat toan", 160), ("Buoc", 60), ("Nodes", 60), ("Toi uu", 60)]):
+            screen.blit(cfg.FONT_SMALL.render(label, True, cfg.GRAY_LIGHT), (x + sum([0, 160, 60, 60][:col_h]), y))
+        y += 20
+        for name, steps, nodes, is_opt in self.comparison:
+            is_sel = (name == puzzle_registry.get(state.selected_solver_id).name if state.selected_solver_id else False)
+            color = cfg.GREEN if is_sel else cfg.WHITE
+            screen.blit(cfg.FONT_SMALL.render(name, True, color), (x, y))
+            screen.blit(cfg.FONT_SMALL.render(str(steps), True, color), (x + 160, y))
+            screen.blit(cfg.FONT_SMALL.render(str(nodes), True, color), (x + 220, y))
+            screen.blit(cfg.FONT_SMALL.render("Co" if is_opt else "Khong", True, cfg.GREEN if is_opt else cfg.RED), (x + 280, y))
+            y += 20
+        y += 10
+        ap_text = cfg.FONT_LARGE.render(f"AP nhan duoc: {state.action_points}", True, cfg.ORANGE)
+        screen.blit(ap_text, (x, y))
