@@ -40,3 +40,6 @@ class PathfindingRegistry:
 
 
 pathfinding_registry = PathfindingRegistry()
+
+# Auto-import algorithms so they self-register
+from vacuum import bfs, dfs, ids, ucs
