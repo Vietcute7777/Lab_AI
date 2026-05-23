@@ -43,3 +43,6 @@ class PuzzleSolverRegistry:
 
 
 puzzle_registry = PuzzleSolverRegistry()
+
+# Import solver modules to trigger registration
+from puzzle import bfs, dfs, greedy  # noqa: F401, E402
