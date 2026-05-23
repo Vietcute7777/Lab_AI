@@ -1,8 +1,10 @@
 # cleanbot-saga/main.py
-"""CleanBot Saga — Entry point."""
+"""CleanBot Saga — Entry point with Menu."""
 import pygame
 import sys
 import config as cfg
+from core.game_state import state, GameMode, Phase
+from ui.menu import MainMenu
 
 
 def init_pygame():
@@ -18,6 +20,7 @@ def main():
     screen = init_pygame()
     pygame.display.set_caption(cfg.TITLE)
     clock = pygame.time.Clock()
+    menu = MainMenu()
     running = True
 
     while running:
@@ -25,8 +28,16 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if state.phase == Phase.MENU:
+                    mode = menu.handle_click(event.pos)
+                    if mode:
+                        state.mode = mode
+                        print(f"Selected mode: {mode}")
 
-        screen.fill(cfg.GRAY_DARK)
+        if state.phase == Phase.MENU:
+            menu.draw(screen)
+
         pygame.display.flip()
 
     pygame.quit()
