@@ -36,7 +36,7 @@ class ResultScreen:
         return None
 
     def draw(self, screen):
-        screen.fill(cfg.GRAY_DARK)
+        screen.fill(cfg.BG_DARK)
         draw_text(screen, "KẾT QUẢ", 20, 40, cfg.FONT_TITLE, cfg.CYAN)
 
         y = 130
@@ -53,6 +53,10 @@ class ResultScreen:
         y += 60
         stars_text = "⭐" * state.stars + "☆" * (3 - state.stars)
         draw_text(screen, stars_text, 100, y, cfg.FONT_TITLE, cfg.YELLOW)
+
+        if state.stars == 3:
+            from ui.renderer import draw_star_burst
+            draw_star_burst(screen, (screen.get_width() // 2, 450), count=12, color=cfg.YELLOW, size=80)
 
         # Buttons
         cx = screen.get_width() // 2

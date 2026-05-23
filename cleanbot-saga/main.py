@@ -53,6 +53,7 @@ def init_pygame():
     cfg.FONT_NORMAL = pygame.font.Font(font_path, 24)
     cfg.FONT_LARGE = pygame.font.Font(font_path, 32)
     cfg.FONT_TITLE = pygame.font.Font(font_path, 48)
+    cfg.FONT_EMOJI = pygame.font.Font(font_path, 36)
     return pygame.display.set_mode((cfg.SCREEN_WIDTH, cfg.SCREEN_HEIGHT))
 
 
@@ -161,7 +162,7 @@ def main():
             phase2.update()
 
         # ── DRAW ──
-        screen.fill(cfg.GRAY_DARK)
+        screen.fill(cfg.BG_DARK)
 
         if state.phase == Phase.MENU:
             menu.draw(screen)

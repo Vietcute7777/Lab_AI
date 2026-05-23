@@ -1,5 +1,6 @@
 # cleanbot-saga/ui/menu.py
 """Main menu screen."""
+import math
 import pygame
 import config as cfg
 from core.game_state import state, GameMode
@@ -42,7 +43,14 @@ class MainMenu:
 
     def draw(self, screen):
         self.layout(screen)
-        screen.fill(cfg.GRAY_DARK)
+        # Animated gradient background
+        t = pygame.time.get_ticks() / 3000
+        for y in range(screen.get_height()):
+            r = int(18 + 3 * math.sin(y * 0.01 + t))
+            g = int(18 + 3 * math.sin(y * 0.015 + t + 1))
+            b = int(30 + 5 * math.sin(y * 0.02 + t + 2))
+            pygame.draw.line(screen, (r, g, b), (0, y), (screen.get_width(), y))
+        screen.fill(cfg.BG_DARK)
         cx = screen.get_width() // 2
 
         title = cfg.FONT_TITLE.render("CLEANBOT SAGA", True, cfg.CYAN)

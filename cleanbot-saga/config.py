@@ -6,20 +6,47 @@ SCREEN_HEIGHT = 800
 FPS = 60
 TITLE = "CleanBot Saga"
 
-# Colors (R, G, B)
+# ── Modern Color Palette ──
+BG_DARK = (18, 18, 30)
+BG_MID = (28, 28, 48)
+BG_LIGHT = (40, 40, 60)
+SIDEBAR_BG = (22, 22, 38)
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY_DARK = (30, 30, 40)
-GRAY_MID = (60, 60, 75)
-GRAY_LIGHT = (180, 180, 190)
-BLUE = (74, 144, 217)
-BLUE_DARK = (40, 80, 140)
-GREEN = (80, 200, 80)
-RED = (220, 60, 60)
-YELLOW = (240, 180, 30)
+GRAY_LIGHT = (180, 180, 200)
+GRAY_MID = (80, 80, 100)
+
+# Accent colors
+BLUE = (70, 130, 230)
+BLUE_BRIGHT = (100, 160, 255)
+BLUE_DARK = (35, 65, 150)
+GREEN = (80, 210, 90)
+GREEN_BRIGHT = (120, 255, 130)
+GREEN_DARK = (40, 120, 50)
+RED = (235, 70, 70)
+RED_BRIGHT = (255, 110, 110)
+YELLOW = (255, 200, 40)
+YELLOW_DARK = (200, 150, 20)
 ORANGE = (255, 150, 30)
 PURPLE = (160, 80, 220)
-CYAN = (60, 200, 200)
+CYAN = (60, 210, 210)
+CYAN_BRIGHT = (100, 255, 255)
+PINK = (255, 100, 180)
+
+# Puzzle tile colors
+TILE_DEFAULT = (55, 55, 85)
+TILE_CORRECT = (40, 140, 60)
+TILE_HIGHLIGHT = (70, 130, 230)
+TILE_EMPTY = (25, 25, 45)
+
+# Robot colors
+ROBOT_PLAYER = (70, 130, 230)
+ROBOT_ENEMY = (235, 70, 70)
+
+# Dust colors
+DUST_COLOR = (255, 200, 40)
+DUST_GLOW = (255, 220, 100)
 
 # Layout
 SIDEBAR_WIDTH = 350
@@ -35,6 +62,7 @@ GRID_GAP = 2
 
 # Animation (ms per step)
 SPEEDS = {1: 400, 2: 200, 4: 50}
+ANIM_SLIDE_MS = 150  # Smooth slide duration
 
 # Scoring
 AP_BASE = 20
@@ -47,3 +75,4 @@ FONT_SMALL = None
 FONT_NORMAL = None
 FONT_LARGE = None
 FONT_TITLE = None
+FONT_EMOJI = None

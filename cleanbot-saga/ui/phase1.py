@@ -119,7 +119,7 @@ class Phase1Screen:
         self.comparison.sort(key=lambda x: x[1] if isinstance(x[1], int) else 999)
 
     def draw(self, screen):
-        screen.fill(cfg.GRAY_DARK)
+        screen.fill(cfg.BG_DARK)
         draw_text(screen, "PHA 1: GIẢI 8-PUZZLE", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
 
         if self.current_board:

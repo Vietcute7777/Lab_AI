@@ -132,7 +132,7 @@ class Phase2Screen:
             f"Bui: {state.dust_cleaned}/{state.total_dust} | Diem: {state.score} | ⭐{state.stars}")
 
     def draw(self, screen):
-        screen.fill(cfg.GRAY_DARK)
+        screen.fill(cfg.BG_DARK)
         draw_text(screen, "PHA 2: ĐIỀU KHIỂN ROBOT HÚT BỤI", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
         draw_text(screen, f"AP: {state.action_points} | Đã hút: {state.dust_cleaned}/{state.total_dust}",
                   20, 55, cfg.FONT_NORMAL, cfg.ORANGE)
