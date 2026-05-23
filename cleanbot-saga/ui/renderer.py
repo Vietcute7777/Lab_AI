@@ -121,21 +121,127 @@ def draw_grid(screen, grid, robot_pos, ox, oy, dust_particles=None):
 
 
 def draw_robot(screen, center, radius, color):
-    """Draw a cute robot icon."""
+    """Draw a vacuum cleaner robot with wheels, body, and details."""
     cx, cy = center
-    # Body
-    pygame.draw.circle(screen, color, (cx, cy), radius)
-    # Eyes
-    eye_r = max(2, radius // 4)
-    pygame.draw.circle(screen, cfg.WHITE, (cx - radius // 3, cy - radius // 3), eye_r)
-    pygame.draw.circle(screen, cfg.WHITE, (cx + radius // 3, cy - radius // 3), eye_r)
-    # Pupils
-    pygame.draw.circle(screen, cfg.BLACK, (cx - radius // 3, cy - radius // 3), eye_r // 2)
-    pygame.draw.circle(screen, cfg.BLACK, (cx + radius // 3, cy - radius // 3), eye_r // 2)
-    # Antenna
-    antenna_y = cy - radius - 2
-    pygame.draw.line(screen, color, (cx, cy - radius), (cx, antenna_y), 2)
-    pygame.draw.circle(screen, cfg.YELLOW, (cx, antenna_y), 3)
+    r = radius
+
+    # ── Shadow ──
+    pygame.draw.ellipse(screen, (0, 0, 0, 60),
+        (cx - r + 2, cy + r // 3, r * 2 - 4, r // 2))
+
+    # ── Rear wheels ──
+    wheel_w, wheel_h = r // 3, r // 2
+    wheel_y = cy + r // 4
+    # Left wheel
+    pygame.draw.rect(screen, (30, 30, 40),
+        (cx - r + r // 5, wheel_y, wheel_w, wheel_h), border_radius=3)
+    pygame.draw.rect(screen, cfg.GRAY_MID,
+        (cx - r + r // 5 + 2, wheel_y + 2, wheel_w - 4, wheel_h - 4), border_radius=2)
+    # Right wheel
+    pygame.draw.rect(screen, (30, 30, 40),
+        (cx + r - r // 5 - wheel_w, wheel_y, wheel_w, wheel_h), border_radius=3)
+    pygame.draw.rect(screen, cfg.GRAY_MID,
+        (cx + r - r // 5 - wheel_w + 2, wheel_y + 2, wheel_w - 4, wheel_h - 4), border_radius=2)
+
+    # ── Main body (rounded polygon) ──
+    body_points = [
+        (cx - r, cy - r // 3),        # top-left
+        (cx - r + r // 4, cy - r),     # upper-left
+        (cx + r - r // 4, cy - r),     # upper-right
+        (cx + r, cy - r // 3),         # top-right
+        (cx + r, cy + r // 2),         # bottom-right
+        (cx - r, cy + r // 2),         # bottom-left
+    ]
+    # Body gradient layers
+    for i, (darken) in enumerate([0, 10, 20]):
+        body_color = tuple(max(0, c - darken) for c in color)
+        offset_body = [(px, py + i) for px, py in body_points]
+        pygame.draw.polygon(screen, body_color, offset_body)
+
+    # Body border
+    pygame.draw.polygon(screen, tuple(min(255, c + 40) for c in color), body_points, width=2)
+
+    # ── Front bumper ──
+    bumper_y = cy + r // 2
+    bumper_rect = pygame.Rect(cx - r + 3, bumper_y - 2, r * 2 - 6, r // 5)
+    pygame.draw.rect(screen, (50, 50, 60), bumper_rect, border_radius=3)
+
+    # ── Dust container (top rectangle) ──
+    container_w = r * 2 // 3
+    container_h = r // 4
+    container_rect = pygame.Rect(cx - container_w // 2, cy - r - container_h + 2,
+                                  container_w, container_h)
+    pygame.draw.rect(screen, (60, 60, 75), container_rect, border_radius=3)
+    pygame.draw.rect(screen, color, container_rect, width=1, border_radius=3)
+
+    # ── LED indicator ──
+    led_x, led_y = cx, cy - r // 2
+    blink = 0.6 + 0.4 * math.sin(pygame.time.get_ticks() / 200)
+    led_color = (int(255 * blink), int(100 * blink), 0)
+    draw_glow(screen, (led_x, led_y), r // 5, led_color, 60)
+    pygame.draw.circle(screen, led_color, (led_x, led_y), r // 6)
+
+    # ── Eyes (on the body) ──
+    eye_y = cy - r // 4
+    eye_r = max(2, r // 6)
+    eye_spacing = r // 3
+    # Left eye
+    pygame.draw.circle(screen, cfg.WHITE, (cx - eye_spacing, eye_y), eye_r)
+    pygame.draw.circle(screen, cfg.BLACK, (cx - eye_spacing, eye_y), eye_r // 2)
+    # Right eye
+    pygame.draw.circle(screen, cfg.WHITE, (cx + eye_spacing, eye_y), eye_r)
+    pygame.draw.circle(screen, cfg.BLACK, (cx + eye_spacing, eye_y), eye_r // 2)
+
+
+def draw_vacuum_large(screen, center, size, direction="right"):
+    """Draw a large detailed vacuum cleaner for title screens."""
+    cx, cy = center
+    # Simple scale: size is roughly the body width
+    draw_robot(screen, center, size, cfg.BLUE)
+    # Add suction effect particles below
+    if pygame.time.get_ticks() % 500 < 300:
+        for i in range(3):
+            px = cx - size // 3 + i * size // 3
+            py = cy + size // 2 + 5 + i * 4
+            pygame.draw.circle(screen, cfg.CYAN_BRIGHT, (int(px), int(py)), 2)
+
+
+def draw_scientist(screen, center, size):
+    """Draw a scientist/researcher character for the menu."""
+    cx, cy = center
+    s = size  # scale
+
+    # Lab coat (body)
+    coat_color = (220, 225, 235)
+    coat_rect = pygame.Rect(cx - s // 2, cy - s // 3, s, s // 2 + s // 3)
+    pygame.draw.rect(screen, coat_color, coat_rect, border_radius=s // 4)
+    pygame.draw.rect(screen, (180, 185, 195), coat_rect, width=2, border_radius=s // 4)
+
+    # Head
+    head_r = s // 3
+    head_y = cy - s // 3 - head_r // 2
+    pygame.draw.circle(screen, (255, 220, 180), (cx, int(head_y)), head_r)
+    pygame.draw.circle(screen, (200, 170, 140), (cx, int(head_y)), head_r, width=2)
+
+    # Glasses
+    glass_r = head_r // 2
+    glass_y = int(head_y - 2)
+    pygame.draw.circle(screen, (50, 50, 60), (cx - glass_r // 2, glass_y), glass_r // 2, width=2)
+    pygame.draw.circle(screen, (50, 50, 60), (cx + glass_r // 2, glass_y), glass_r // 2, width=2)
+    # Bridge
+    pygame.draw.line(screen, (50, 50, 60),
+        (cx - glass_r // 2 + glass_r // 2, glass_y),
+        (cx + glass_r // 2 - glass_r // 2, glass_y), 2)
+
+    # Clipboard
+    board_rect = pygame.Rect(cx - s, cy - s // 4, s // 2, s // 2 + s // 6)
+    pygame.draw.rect(screen, (180, 160, 120), board_rect, border_radius=4)
+    pygame.draw.rect(screen, (140, 120, 90), board_rect, width=2, border_radius=4)
+    # Paper lines
+    for i in range(3):
+        ly = board_rect.y + s // 6 + i * s // 8
+        pygame.draw.line(screen, (160, 140, 110),
+            (board_rect.x + 6, ly), (board_rect.x + board_rect.width - 6, ly), 1)
 
 
 # ── Buttons ──
