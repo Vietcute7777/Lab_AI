@@ -116,11 +116,11 @@ Game có 3 chế độ: Chiến Dịch (Campaign 15 màn), Daily Challenge, và 
 
 ## 6. Animation & UX
 
-- **Puzzle animation:** Ô số trượt với CSS transition (200ms mặc định, có tua nhanh)
-- **Robot animation:** Hiệu ứng di chuyển từ ô này sang ô khác + hiệu ứng hút bụi
-- **Bảng nhật ký:** Scroll tự động, màu sắc theo loại sự kiện (di chuyển/xanh dương, hút bụi/vàng, hoàn thành/xanh lá)
-- **Nút điều khiển:** Play/Pause, 1x/2x/4x tốc độ
-- **Bảng so sánh:** Hiển thị sau mỗi pha, so sánh kết quả nếu chọn thuật toán khác + nhận xét
+- **Puzzle animation:** Ô số trượt mượt với Pygame surface translation (200ms mặc định, có tua nhanh)
+- **Robot animation:** Sprite di chuyển từ ô này sang ô khác + hiệu ứng hút bụi (vòng tròn lan tỏa)
+- **Bảng nhật ký:** Panel bên phải cuộn tự động, màu sắc theo loại sự kiện (di chuyển/xanh dương, hút bụi/vàng, hoàn thành/xanh lá)
+- **Nút điều khiển:** Play/Pause, 1x/2x/4x tốc độ — vẽ bằng Pygame rect + text
+- **Bảng so sánh:** Overlay hiển thị sau mỗi pha, so sánh kết quả nếu chọn thuật toán khác + nhận xét
 
 ---
 
@@ -130,46 +130,51 @@ Game có 3 chế độ: Chiến Dịch (Campaign 15 màn), Daily Challenge, và 
 
 | Layer | Công Nghệ |
 |-------|-----------|
-| Frontend | HTML5 + CSS3 + Vanilla JS |
-| AI Engine | JavaScript (port từ Python notebooks) |
-| Lưu trữ | localStorage |
-| Visualization | CSS Grid + Animation |
+| Game Engine | **Pygame** — game loop, render, animation |
+| AI Engine | **Python** — tái sử dụng trực tiếp code từ notebooks |
+| Lưu trữ | **JSON files** — thay cho localStorage |
+| UI Components | **Pygame** — button, panel, text rendering |
 
 ### 7.2 Cấu Trúc File
 
 ```
 cleanbot-saga/
-├── index.html
-├── css/
-│   └── style.css
-├── js/
-│   ├── main.js              # Entry point, quản lý màn hình
-│   ├── game-state.js        # State machine
-│   ├── campaign.js          # Dữ liệu 15 màn
-│   ├── storage.js           # localStorage helper
-│   ├── daily.js             # Seed daily challenge
-│   ├── puzzle/
-│   │   ├── board.js         # 8-puzzle: sinh, in, di chuyển
-│   │   ├── bfs.js           # BFS solver + animation
-│   │   ├── dfs.js           # DFS solver (depth limit)
-│   │   ├── greedy.js        # Greedy Best-First (Manhattan)
-│   │   └── heuristic.js     # Manhattan, solvability check
-│   ├── vacuum/
-│   │   ├── grid.js          # Map: sinh môi trường, vẽ lưới
-│   │   ├── bfs.js           # BFS pathfinding
-│   │   ├── dfs.js           # DFS pathfinding
-│   │   ├── ids.js           # IDS (Early + Late goal test)
-│   │   ├── ucs.js           # UCS (priority queue)
-│   │   └── robot.js         # Robot: di chuyển, hút bụi, animation
-│   ├── pve/
-│   │   └── ai-opponent.js   # AI đối thủ 3 mức
-│   └── ui/
-│       ├── renderer.js      # Render puzzle + grid + animation
-│       ├── log-panel.js     # Bảng nhật ký từng bước
-│       ├── scoreboard.js    # Bảng điểm, sao, xếp hạng
-│       └── controls.js      # Nút Play/Pause/Speed
-└── assets/
-    └── sounds/ (tùy chọn)
+├── main.py                  # Entry point, game loop, state machine
+├── config.py                # Hằng số: màu sắc, kích thước, FPS
+├── core/
+│   ├── game_state.py        # State machine (MENU → PHASE1 → PHASE2 → RESULT)
+│   ├── scoring.py           # Tính điểm, sao, AP
+│   └── storage.py           # Lưu/đọc tiến độ ra JSON
+├── puzzle/
+│   ├── __init__.py           # PuzzleSolverRegistry — đăng ký solver
+│   ├── board.py              # 8-puzzle: sinh, in, di chuyển
+│   ├── heuristic.py          # Manhattan, solvability check
+│   ├── bfs.py                # BFS solver
+│   ├── dfs.py                # DFS solver (depth limit)
+│   └── greedy.py             # Greedy Best-First (Manhattan)
+├── vacuum/
+│   ├── __init__.py            # PathfindingRegistry — đăng ký thuật toán
+│   ├── grid.py                # Map: sinh môi trường, quản lý bụi
+│   ├── robot.py               # Robot: di chuyển, hút bụi, animation
+│   ├── bfs.py                 # BFS pathfinding
+│   ├── dfs.py                 # DFS pathfinding
+│   ├── ids.py                 # IDS (Early + Late goal test)
+│   └── ucs.py                 # UCS (priority queue)
+├── campaign/
+│   ├── __init__.py
+│   └── levels.py              # Dữ liệu 15 màn campaign
+├── pve/
+│   ├── __init__.py
+│   └── ai_opponent.py         # AI đối thủ 3 mức
+├── ui/
+│   ├── __init__.py
+│   ├── renderer.py            # Vẽ puzzle, lưới, robot, animation
+│   ├── log_panel.py           # Bảng nhật ký từng bước
+│   ├── controls.py            # Nút Play/Pause/Speed
+│   ├── menu.py                # Màn hình menu chính
+│   └── scoreboard.py          # Bảng điểm, sao, xếp hạng
+└── data/
+    └── (save files: campaign_progress.json, daily.json, elo.json)
 ```
 
 ### 7.3 Game State Machine
@@ -191,16 +196,17 @@ MENU → PHASE1 (chọn thuật toán → AI chạy) → PHASE2 (chọn thuật 
 ## 9. Phạm Vi & Giới Hạn
 
 ### Trong phạm vi
-- Toàn bộ game chạy client-side, không cần server
-- Port tất cả thuật toán AI từ Python sang JS
+- Desktop app chạy bằng Pygame
+- Tái sử dụng trực tiếp code AI từ Python notebooks (không cần port)
 - Animation từng bước cho cả 2 pha
 - 3 chế độ chơi (Campaign, Daily, PvE)
-- Lưu tiến độ qua localStorage
+- Lưu tiến độ qua JSON files
+- Kiến trúc plugin để dễ thêm thuật toán mới
 
 ### Ngoài phạm vi
 - Không multiplayer online
 - Không backend/server
-- Không mobile app (chỉ responsive web)
+- Không mobile app
 - Không âm thanh bắt buộc (optional)
 
 ---
