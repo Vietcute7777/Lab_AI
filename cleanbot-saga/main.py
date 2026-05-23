@@ -13,12 +13,46 @@ from ui.daily import generate_daily_puzzle, generate_daily_grid, start_daily
 from campaign.levels import get_level
 
 
+_VN_FONT_PATH = None
+
+
+def _find_vn_font():
+    """Find a system font that supports Vietnamese Unicode glyphs."""
+    global _VN_FONT_PATH
+    if _VN_FONT_PATH:
+        return _VN_FONT_PATH
+
+    # Try explicit Windows font paths first (best Vietnamese coverage)
+    candidates = [
+        "C:/Windows/Fonts/tahoma.ttf",
+        "C:/Windows/Fonts/arial.ttf",
+        "C:/Windows/Fonts/segoeui.ttf",
+    ]
+
+    import os
+    for path in candidates:
+        if os.path.exists(path):
+            _VN_FONT_PATH = path
+            return _VN_FONT_PATH
+
+    # Fallback: use pygame's font matching
+    for name in ["Tahoma", "Arial", "Segoe UI", "Verdana"]:
+        matched = pygame.font.match_font(name)
+        if matched:
+            _VN_FONT_PATH = matched
+            return _VN_FONT_PATH
+
+    _VN_FONT_PATH = pygame.font.get_default_font()
+    return _VN_FONT_PATH
+
+
 def init_pygame():
     pygame.init()
-    cfg.FONT_SMALL = pygame.font.Font(None, 18)
-    cfg.FONT_NORMAL = pygame.font.Font(None, 24)
-    cfg.FONT_LARGE = pygame.font.Font(None, 32)
-    cfg.FONT_TITLE = pygame.font.Font(None, 48)
+    font_path = _find_vn_font()
+    cfg.FONT_SMALL = pygame.font.Font(font_path, 18)
+    cfg.FONT_NORMAL = pygame.font.Font(font_path, 24)
+    cfg.FONT_LARGE = pygame.font.Font(font_path, 32)
+    cfg.FONT_TITLE = pygame.font.Font(font_path, 48)
     return pygame.display.set_mode((cfg.SCREEN_WIDTH, cfg.SCREEN_HEIGHT))
 
 
