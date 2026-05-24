@@ -51,8 +51,7 @@ def save_elo(elo):
 
 def get_unlocked_solvers():
     lvl = load_campaign().get("level_completed", 0)
-    unlocked = {"bfs", "dfs"}
-    if lvl >= 3: unlocked.add("greedy")
+    unlocked = {"bfs", "dfs", "greedy"}
     return unlocked
 
 def get_unlocked_algos():

@@ -73,8 +73,8 @@ def main():
     state.pve_elo = load_elo()
 
     # "Next Phase" button tracking
-    next_phase_rect = pygame.Rect(410, 470, 200, 40)
-    view_result_rect = pygame.Rect(410, 590, 200, 40)
+    next_phase_rect = pygame.Rect(cfg.MID_X, 470, cfg.MID_WIDTH, cfg.BUTTON_HEIGHT)
+    view_result_rect = pygame.Rect(cfg.MID_X, 590, cfg.MID_WIDTH, cfg.BUTTON_HEIGHT)
 
     while running:
         dt = clock.tick(cfg.FPS)
@@ -113,26 +113,18 @@ def main():
                 # ── PHASE 1 ──
                 elif state.phase == Phase.PHASE1_PUZZLE:
                     phase1.handle_click(pos)
-                    # Check for "Next Phase" button
-                    if phase1.mode == "done" and state.action_points > 0:
+                    # Check for "Next Phase" button (only if no modal active)
+                    if not phase1.modal and phase1.mode == "done" and state.action_points > 0:
                         if next_phase_rect.collidepoint(pos):
-                            if state.mode == GameMode.CAMPAIGN:
-                                rows, cols, dust, _ = get_level(state.current_level)
-                            elif state.mode == GameMode.PVE:
-                                rows, cols, dust = 7, 9, 20
-                            else:  # DAILY
-                                rows, cols, dust = 7, 9, 20
-                            phase2.enter(rows=rows, cols=cols, dust_count=dust)
-                            state.phase = Phase.PHASE2_VACUUM
+                            phase1.show_transition_modal()
 
                 # ── PHASE 2 ──
                 elif state.phase == Phase.PHASE2_VACUUM:
                     phase2.handle_click(pos)
-                    # Check for "View Results" button
-                    if phase2.mode == "done":
+                    # Check for "View Results" button (only if no modal active)
+                    if not phase2.modal and phase2.mode == "done":
                         if view_result_rect.collidepoint(pos):
-                            result.enter()
-                            state.phase = Phase.RESULT
+                            phase2.show_transition_modal()
 
                 # ── RESULT ──
                 elif state.phase == Phase.RESULT:
@@ -155,6 +147,23 @@ def main():
                             phase1.enter(shuffle_steps=25)
                         state.phase = Phase.PHASE1_PUZZLE
 
+        # ── HANDLE CONFIRMED TRANSITIONS ──
+        if phase1.transition_confirmed:
+            phase1.transition_confirmed = False
+            if state.mode == GameMode.CAMPAIGN:
+                rows, cols, dust, _ = get_level(state.current_level)
+            elif state.mode == GameMode.PVE:
+                rows, cols, dust = 7, 9, 20
+            else:  # DAILY
+                rows, cols, dust = 7, 9, 20
+            phase2.enter(rows=rows, cols=cols, dust_count=dust)
+            state.phase = Phase.PHASE2_VACUUM
+
+        if phase2.transition_confirmed:
+            phase2.transition_confirmed = False
+            result.enter()
+            state.phase = Phase.RESULT
+
         # ── UPDATE ANIMATIONS ──
         if state.phase == Phase.PHASE1_PUZZLE and phase1.mode == "running":
             phase1.update()
@@ -169,8 +178,8 @@ def main():
 
         elif state.phase == Phase.PHASE1_PUZZLE:
             phase1.draw(screen)
-            # "Next Phase" transition button
-            if phase1.mode == "done" and state.action_points > 0:
+            # "Next Phase" transition button (hide if modal active)
+            if not phase1.modal and phase1.mode == "done" and state.action_points > 0:
                 from ui.renderer import draw_button as db2
                 mouse = pygame.mouse.get_pos()
                 db2(screen, next_phase_rect, "QUA PHA 2 >>",
@@ -178,8 +187,8 @@ def main():
 
         elif state.phase == Phase.PHASE2_VACUUM:
             phase2.draw(screen)
-            # "View Results" transition button
-            if phase2.mode == "done":
+            # "View Results" transition button (hide if modal active)
+            if not phase2.modal and phase2.mode == "done":
                 from ui.renderer import draw_button as db3
                 mouse = pygame.mouse.get_pos()
                 db3(screen, view_result_rect, "XEM KẾT QUẢ >>",

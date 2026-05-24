@@ -48,9 +48,24 @@ ROBOT_ENEMY = (235, 70, 70)
 DUST_COLOR = (255, 200, 40)
 DUST_GLOW = (255, 220, 100)
 
-# Layout
+# Layout Margins & Padding
+MARGIN_X = 40
+MARGIN_Y = 30
+PADDING_SMALL = 8
+PADDING_MEDIUM = 16
+PADDING_LARGE = 24
+PADDING_XL = 40
+CONTENT_WIDTH = 500
+BUTTON_WIDTH = 260
+BUTTON_HEIGHT = 44
+BUTTON_GAP = 12
+
 SIDEBAR_WIDTH = 350
+PANEL_WIDTH = SIDEBAR_WIDTH
+PANEL_X = SCREEN_WIDTH - PANEL_WIDTH  # 850
 MAIN_AREA_X = SIDEBAR_WIDTH + 20
+MID_X = 410    # Start of middle content column (between puzzle right edge and panel)
+MID_WIDTH = 330  # Width of middle content column
 
 # Puzzle
 PUZZLE_CELL_SIZE = 80

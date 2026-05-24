@@ -7,15 +7,15 @@ from core.storage import get_unlocked_algos
 from vacuum import pathfinding_registry
 from vacuum.grid import create_grid, count_dust
 from vacuum.robot import Robot
-from ui.renderer import draw_grid, draw_button, draw_panel, draw_text, draw_progress_bar
+from ui.renderer import draw_grid, draw_button, draw_panel, draw_text, draw_progress_bar, Modal
 from ui.log_panel import LogPanel
 from ui.controls import GameControls
 
 
 class Phase2Screen:
     def __init__(self):
-        self.log = LogPanel(850, 310, 330, 400)
-        self.controls = GameControls(410, 540)
+        self.log = LogPanel(cfg.PANEL_X, 310, cfg.PANEL_WIDTH - 20, 400)
+        self.controls = GameControls(cfg.MID_X, 540)
         self.algo_rects = []
         self.algo_list = []
         self.mode = "select"
@@ -25,6 +25,19 @@ class Phase2Screen:
         self.last_step_time = 0
         self.grid_rows = 5
         self.grid_cols = 7
+        self.modal = None
+        self.transition_confirmed = False
+
+    def show_transition_modal(self):
+        self.modal = Modal(
+            title="XÁC NHẬN",
+            body_lines=[
+                ("Xem kết quả và nhận điểm thưởng?", cfg.WHITE),
+                ("Bạn sẽ không thể quay lại Phase 2.", cfg.GRAY_LIGHT),
+            ],
+            buttons=[("HỦY", "cancel", cfg.RED), ("XEM KẾT QUẢ", "confirm", cfg.GREEN)],
+            height=240,
+        )
 
     def enter(self, rows=5, cols=7, dust_count=10):
         state.reset_phase2()
@@ -48,10 +61,18 @@ class Phase2Screen:
         for a in pathfinding_registry.list_all():
             enabled = a.id in unlocked
             self.algo_list.append((a, enabled))
-            self.algo_rects.append(pygame.Rect(410, y, 330, 40))
-            y += 50
+            self.algo_rects.append(pygame.Rect(cfg.MID_X, y, cfg.MID_WIDTH, cfg.BUTTON_HEIGHT))
+            y += cfg.BUTTON_HEIGHT + cfg.BUTTON_GAP
 
     def handle_click(self, pos):
+        if self.modal:
+            result = self.modal.handle_click(pos)
+            if result == "confirm":
+                self.transition_confirmed = True
+                self.modal = None
+            elif result == "cancel":
+                self.modal = None
+            return
         if self.mode == "select":
             for i, rect in enumerate(self.algo_rects):
                 if rect.collidepoint(pos) and self.algo_list[i][1]:
@@ -132,21 +153,22 @@ class Phase2Screen:
             f"Bui: {state.dust_cleaned}/{state.total_dust} | Diem: {state.score} | ⭐{state.stars}")
 
     def draw(self, screen):
+        mx, my = cfg.MARGIN_X, cfg.MARGIN_Y
         screen.fill(cfg.BG_DARK)
-        draw_text(screen, "PHA 2: ĐIỀU KHIỂN ROBOT HÚT BỤI", 20, 20, cfg.FONT_LARGE, cfg.CYAN)
+        draw_text(screen, "PHA 2: ĐIỀU KHIỂN ROBOT HÚT BỤI", mx, my, cfg.FONT_LARGE, cfg.CYAN)
         draw_text(screen, f"AP: {state.action_points} | Đã hút: {state.dust_cleaned}/{state.total_dust}",
-                  20, 55, cfg.FONT_NORMAL, cfg.ORANGE)
+                  mx, my + 35, cfg.FONT_NORMAL, cfg.ORANGE)
 
         if state.grid_map is not None:
-            ox = 50
-            oy = 90
+            ox = mx + 10
+            oy = my + 60
             draw_grid(screen, self.robot.grid if self.robot else state.grid_map,
                       state.robot_pos, ox, oy)
 
-        draw_panel(screen, pygame.Rect(850, 0, 350, 800))
+        draw_panel(screen, pygame.Rect(cfg.PANEL_X, 0, cfg.PANEL_WIDTH, cfg.SCREEN_HEIGHT))
 
         if self.mode == "select":
-            draw_text(screen, "CHỌN THUẬT TOÁN:", 410, 170, cfg.FONT_NORMAL, cfg.WHITE)
+            draw_text(screen, "CHỌN THUẬT TOÁN:", cfg.MID_X, 170, cfg.FONT_NORMAL, cfg.WHITE)
             mouse = pygame.mouse.get_pos()
             for i, (a, enabled) in enumerate(self.algo_list):
                 rect = self.algo_rects[i]
@@ -156,11 +178,11 @@ class Phase2Screen:
 
         elif self.mode == "running":
             a = pathfinding_registry.get(state.selected_algo_id)
-            draw_text(screen, f"Thuật toán: {a.name}", 410, 170, cfg.FONT_SMALL, cfg.CYAN)
+            draw_text(screen, f"Thuật toán: {a.name}", cfg.MID_X, 170, cfg.FONT_SMALL, cfg.CYAN)
             draw_text(screen, f"Bước: {self.robot.steps_taken}/{state.action_points}",
-                      410, 195, cfg.FONT_SMALL, cfg.WHITE)
+                      cfg.MID_X, 195, cfg.FONT_SMALL, cfg.WHITE)
             pct = state.dust_cleaned / max(state.total_dust, 1)
-            draw_progress_bar(screen, 410, 215, 250, 16, pct, cfg.YELLOW)
+            draw_progress_bar(screen, cfg.MID_X, 215, cfg.MID_WIDTH, 16, pct, cfg.YELLOW)
 
         elif self.mode == "done":
             self._draw_result(screen)
@@ -169,18 +191,21 @@ class Phase2Screen:
         if self.mode in ("running", "done"):
             self.controls.draw(screen)
 
+        if self.modal:
+            self.modal.draw(screen)
+
     def _draw_result(self, screen):
-        x, y = 410, 170
+        x, y = cfg.MID_X, 170
         draw_text(screen, "KẾT QUẢ", x, y, cfg.FONT_LARGE, cfg.CYAN)
-        y += 40
+        y += cfg.PADDING_XL
         draw_text(screen, f"Bụi đã hút: {state.dust_cleaned} / {state.total_dust}", x, y)
-        y += 25
+        y += cfg.PADDING_LARGE
         draw_text(screen, f"AP còn dư: {state.action_points - self.robot.steps_taken}", x, y)
-        y += 25
+        y += cfg.PADDING_LARGE
         draw_text(screen, f"Thuật toán tối ưu: {'Có' if state.optimal_algo_chosen else 'Không'}",
                   x, y, color=cfg.GREEN if state.optimal_algo_chosen else cfg.RED)
-        y += 25
+        y += cfg.PADDING_LARGE
         draw_text(screen, f"Điểm: {state.score}", x, y, cfg.FONT_LARGE, cfg.ORANGE)
-        y += 35
+        y += cfg.PADDING_XL + 10
         stars_text = "⭐" * state.stars + "☆" * (3 - state.stars)
         draw_text(screen, stars_text, x, y, cfg.FONT_TITLE, cfg.YELLOW)

@@ -251,8 +251,9 @@ def draw_button(screen, rect, text, color=cfg.BLUE, hover=False, enabled=True):
     if not enabled:
         color = cfg.GRAY_MID
 
-    # Shadow
-    draw_shadow(screen, rect, offset=3, radius=8)
+    # Shadow (hidden on hover)
+    if not hover:
+        draw_shadow(screen, rect, offset=3, radius=8)
 
     # Glow on hover
     if hover and enabled:
@@ -328,6 +329,91 @@ def draw_progress_bar(screen, x, y, w, h, pct, color=cfg.GREEN, bg_color=None):
             color_bottom = tuple(max(0, c - 30) for c in color)
             draw_rect_gradient(screen, fill_rect, color_top, color_bottom)
             pygame.draw.rect(screen, tuple(min(255, c + 50) for c in color), fill_rect, width=1, border_radius=4)
+
+
+# ── Modal ──
+
+class Modal:
+    """Reusable modal overlay with title, body text, and action buttons."""
+
+    def __init__(self, title, body_lines, buttons, width=420, height=None):
+        """
+        title: str
+        body_lines: list of (text, color) tuples
+        buttons: list of (label, action_key, color) tuples
+        """
+        self.title = title
+        self.body_lines = body_lines
+        self.buttons = buttons
+        self.width = width
+        self.height = height or (120 + len(body_lines) * 24 + len(buttons) * 50)
+        self.rect = None
+        self.button_rects = []
+        self.result = None
+
+    def layout(self, screen):
+        sw, sh = screen.get_width(), screen.get_height()
+        mw, mh = self.width, self.height
+        self.rect = pygame.Rect((sw - mw) // 2, (sh - mh) // 2, mw, mh)
+
+        self.button_rects = []
+        total_bw = len(self.buttons) * 180 + max(0, len(self.buttons) - 1) * 16
+        bx = self.rect.centerx - total_bw // 2
+        by = self.rect.bottom - 60
+        for label, action, color in self.buttons:
+            r = pygame.Rect(bx, by, 180, 40)
+            self.button_rects.append((r, action, color))
+            bx += 196
+
+    def handle_click(self, pos):
+        for rect, action, _ in self.button_rects:
+            if rect.collidepoint(pos):
+                self.result = action
+                return action
+        return None
+
+    def draw(self, screen):
+        sw, sh = screen.get_width(), screen.get_height()
+        self.layout(screen)
+
+        # Backdrop
+        backdrop = pygame.Surface((sw, sh), pygame.SRCALPHA)
+        backdrop.fill((0, 0, 0, 160))
+        screen.blit(backdrop, (0, 0))
+
+        # Modal background
+        draw_rect_gradient(screen, self.rect, (30, 30, 50), (20, 20, 35))
+        pygame.draw.rect(screen, (60, 60, 80), self.rect, width=2, border_radius=12)
+        draw_shadow(screen, self.rect, offset=6, radius=12)
+
+        # Title
+        title_surf = cfg.FONT_LARGE.render(self.title, True, cfg.CYAN_BRIGHT)
+        screen.blit(title_surf, title_surf.get_rect(centerx=self.rect.centerx, top=self.rect.y + 20))
+
+        # Separator
+        pygame.draw.line(screen, cfg.GRAY_MID,
+            (self.rect.x + 30, self.rect.y + 60),
+            (self.rect.right - 30, self.rect.y + 60), 1)
+
+        # Body
+        y = self.rect.y + 80
+        for text, color in self.body_lines:
+            if not text.strip():
+                y += 12  # spacer line
+                continue
+            font = cfg.FONT_SMALL if text.startswith("  ") else cfg.FONT_NORMAL
+            surf = font.render(text, True, color)
+            screen.blit(surf, surf.get_rect(centerx=self.rect.centerx, y=y))
+            y += 28
+
+        # Buttons
+        mouse = pygame.mouse.get_pos()
+        for rect, _, color in self.button_rects:
+            hover = rect.collidepoint(mouse)
+            draw_button(screen, rect, "", color, hover)
+            label = [b[0] for b in self.buttons if b[1] == _][0]
+            lbl = cfg.FONT_NORMAL.render(label, True, cfg.WHITE)
+            screen.blit(lbl, lbl.get_rect(center=rect.center))
 
 
 # ── Particles ──
